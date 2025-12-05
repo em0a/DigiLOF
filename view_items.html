@@ -11,7 +11,27 @@
             padding: 20px;
         }
         .item {
+            display: flex;
+            align-items: center;
             margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .item img {
+            max-width: 100px;  /* Size of the image */
+            margin-right: 20px; /* Space between image and text */
+            border-radius: 8px;
+        }
+        .item-details {
+            flex: 1;
+        }
+        .editable {
+            font-size: 18px;
+            border: 1px solid #ccc;
+            padding: 5px;
+            width: 200px;
         }
         button {
             padding: 5px 10px;
@@ -30,34 +50,65 @@
         const itemsList = document.getElementById('itemsList');
         const logData = JSON.parse(localStorage.getItem('scannedItems')) || [];
 
-        if (logData.length === 0) {
-            itemsList.innerHTML = '<p>No items found.</p>';
-        } else {
-            logData.forEach((item, index) => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'item';
-                itemDiv.innerHTML = `
-                    <strong>${item.name}</strong> - <img src="${item.photo}" alt="${item.name}" style="width: 100px; height: auto;"> 
-                    (Scanned at: ${item.timestamp})
-                    <button onclick="editItem(${index})">Edit</button>
-                    <button onclick="deleteItem(${index})">Delete</button>
-                `;
-                itemsList.appendChild(itemDiv);
-            });
+        function renderItems() {
+            itemsList.innerHTML = ''; // Clear the list
+
+            if (logData.length === 0) {
+                itemsList.innerHTML = '<p>No items found.</p>';
+            } else {
+                logData.forEach((item, index) => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'item';
+
+                    itemDiv.innerHTML = `
+                        <img src="${item.photo}" alt="${item.name}">
+                        <div class="item-details">
+                            <strong>Item Name:</strong> 
+                            <span id="item-name-${index}" class="item-name">${item.name}</span> 
+                            <button onclick="editItem(${index})">Edit</button>
+                            <button onclick="deleteItem(${index})">Delete</button>
+                            <div id="edit-container-${index}" style="display: none;">
+                                <input id="edit-input-${index}" type="text" class="editable" value="${item.name}">
+                                <button onclick="saveItem(${index})">Save</button>
+                            </div>
+                        </div>
+                    `;
+                    itemsList.appendChild(itemDiv);
+                });
+            }
         }
 
-        // Edit an item
+        // Edit the item - show input field for name edit
         function editItem(index) {
-            window.location.href = `submit_item.html?index=${index}`;
+            const itemDiv = document.getElementById(`item-name-${index}`);
+            const editContainer = document.getElementById(`edit-container-${index}`);
+            const editInput = document.getElementById(`edit-input-${index}`);
+
+            itemDiv.style.display = 'none'; // Hide item name
+            editContainer.style.display = 'block'; // Show input field for editing
         }
 
-        // Delete an item
-        function deleteItem(index) {
-            let logData = JSON.parse(localStorage.getItem('scannedItems')) || [];
-            logData.splice(index, 1);  // Remove the item at the specified index
-            localStorage.setItem('scannedItems', JSON.stringify(logData)); // Save updated data
-            window.location.reload(); // Reload the page to reflect the changes
+        // Save the edited item to localStorage
+        function saveItem(index) {
+            const editedName = document.getElementById(`edit-input-${index}`).value;
+            if (editedName.trim() === '') {
+                alert('Item name cannot be empty.');
+                return;
+            }
+
+            logData[index].name = editedName; // Update the name in the array
+            localStorage.setItem('scannedItems', JSON.stringify(logData)); // Save back to localStorage
+            renderItems(); // Re-render the updated list
         }
+
+        // Delete an item from the list
+        function deleteItem(index) {
+            logData.splice(index, 1); // Remove the item from the array
+            localStorage.setItem('scannedItems', JSON.stringify(logData)); // Save updated data
+            renderItems(); // Re-render the updated list
+        }
+
+        renderItems(); // Initial render
     </script>
 </body>
 </html>
