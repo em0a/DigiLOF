@@ -3,124 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit Item</title>
+    <title>Smart Scanning Kiosk - Home</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        #leftPanel {
-            flex: 1;
-            margin-right: 20px;
-        }
-        #rightPanel {
-            flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            height: 100vh;
+            margin: 0;
         }
         button {
             padding: 10px 20px;
+            margin: 10px;
             cursor: pointer;
+            font-size: 16px;
         }
-        #video {
-            width: 100%;
-            max-width: 600px; /* Make video bigger */
-            height: auto;
-            border: 1px solid #ccc;
-        }
-        #photoDisplay {
-            margin-top: 20px;
-        }
-        #photo {
-            width: 100%;
-            height: auto;
-            max-width: 600px; /* Make photo the same size as video */
+        #lastItem {
+            font-size: 18px;
+            color: green;
             margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div id="leftPanel">
-        <h1>Submit Item</h1>
-        <button onclick="window.location.href='index.html'">Back to Home</button>
-        <div>
-            <label for="itemName">Item Name:</label>
-            <input type="text" id="itemName" placeholder="Enter Item Name">
-            <button id="captureButton">Capture Photo</button>
-
-            <!-- Photo Display -->
-            <div id="photoDisplay">
-                <img id="photo" src="" alt="Captured Photo">
-            </div>
-            <button id="saveItemButton" style="display:none;">Submit Item</button>
-        </div>
-    </div>
-
-    <div id="rightPanel">
-        <!-- Video Feed -->
-        <video id="video" autoplay></video>
-    </div>
+    <h1>DigiLOF</h1>
+    <button onclick="window.location.href='view_items.html'">View Items</button>
+    <button onclick="window.location.href='submit_item.html'">Submit Item</button>
+    
+    <div id="lastItem"></div>
 
     <script>
-        // Get references to HTML elements
-        const captureButton = document.getElementById('captureButton');
-        const saveItemButton = document.getElementById('saveItemButton');
-        const photoDisplay = document.getElementById('photoDisplay');
-        const photo = document.getElementById('photo');
-        const itemNameInput = document.getElementById('itemName');
-        const video = document.getElementById('video');
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-
-        // Start the webcam feed
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(stream) {
-                video.srcObject = stream;
-                video.play(); // Start the video
-            })
-            .catch(function(error) {
-                alert("Error accessing webcam: " + error);
-            });
-
-        // Capture photo when the button is clicked
-        captureButton.addEventListener('click', function() {
-            // Capture the frame from the video feed and draw it on the canvas
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            let dataUrl = canvas.toDataURL('image/png');
-            photo.src = dataUrl;  // Set the captured image to the photo element
-            photoDisplay.style.display = 'block'; // Show the captured photo
-            saveItemButton.style.display = 'block'; // Show the submit button
-        });
-
-        // Submit the item
-        saveItemButton.addEventListener('click', function() {
-            const itemName = itemNameInput.value.trim();
-            const photoSrc = photo.src;
-
-            if (!itemName || !photoSrc) {
-                alert('Please provide a name and capture a photo.');
-                return;
-            }
-
-            const timestamp = new Date().toISOString();
-            const itemData = { name: itemName, photo: photoSrc, timestamp: timestamp };
-
-            let logData = JSON.parse(localStorage.getItem('scannedItems')) || [];
-            logData.push(itemData);
-            localStorage.setItem('scannedItems', JSON.stringify(logData));
-
-            alert('Item submitted!');
-            window.location.href = 'index.html';  // Redirect back to the home page
-        });
+        // Get the last submitted item from localStorage and display it
+        const logData = JSON.parse(localStorage.getItem('scannedItems')) || [];
+        if (logData.length > 0) {
+            const lastItem = logData[logData.length - 1];
+            document.getElementById('lastItem').innerHTML = `Last Submitted Item: ${lastItem.name} (Submitted at: ${lastItem.timestamp})`;
+        } else {
+            document.getElementById('lastItem').innerHTML = 'No items submitted yet.';
+        }
     </script>
 </body>
 </html>
