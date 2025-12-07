@@ -7,120 +7,126 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
             display: flex;
-            flex-direction: row;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
         }
-        #leftPanel {
-            flex: 1;
-            margin-right: 20px;
+        .container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 80%;
+            max-width: 900px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        #rightPanel {
-            flex: 1;
+        .form-container {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            width: 45%;
+            padding: 20px;
+            border-left: 2px solid #ddd;
         }
-        button {
-            padding: 10px 20px;
-            cursor: pointer;
+        .form-container h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        input[type="text"], button {
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
         }
         #video {
             width: 100%;
-            max-width: 600px; /* Make video bigger */
             height: auto;
-            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
         }
         #photoDisplay {
-            margin-top: 20px;
+            margin-top: 15px;
+            text-align: center;
         }
         #photo {
-            width: 100%;
-            height: auto;
-            max-width: 600px; /* Make photo the same size as video */
+            max-width: 80%;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        button {
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 18px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .return-home {
+            background-color: #2196F3;
+        }
+        .return-home:hover {
+            background-color: #0b7dda;
+        }
+        .input-container {
+            display: flex;
+            flex-direction: column;
+        }
+        #countdown {
+            font-size: 48px;
+            color: red;
+            font-weight: bold;
             margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div id="leftPanel">
-        <h1>Submit Item</h1>
-        <button onclick="window.location.href='index.html'">Back to Home</button>
-        <div>
-            <label for="itemName">Item Name:</label>
-            <input type="text" id="itemName" placeholder="Enter Item Name">
-            <button id="captureButton">Capture Photo</button>
 
-            <!-- Photo Display -->
+    <div class="container">
+        <!-- Camera Section -->
+        <div class="camera-container">
+            <video id="video" autoplay></video>
+            <button id="captureButton">Capture Photo</button>
+            <div id="countdown"></div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-container">
+            <h1>Submit Item</h1>
+
+            <div class="input-container">
+                <label for="userName">Enter Your Name:</label>
+                <input type="text" id="userName" placeholder="Enter Your Name">
+            </div>
+
+            <div class="input-container">
+                <label for="itemName">Item Name:</label>
+                <input type="text" id="itemName" placeholder="Enter Item Name">
+            </div>
+
+            <div class="button-container">
+                <button id="saveItemButton" style="display:none;">Submit Item</button>
+            </div>
+
             <div id="photoDisplay">
                 <img id="photo" src="" alt="Captured Photo">
             </div>
-            <button id="saveItemButton" style="display:none;">Submit Item</button>
+
+            <button class="return-home" onclick="window.location.href='index.html'">Return to Home</button>
         </div>
     </div>
 
-    <div id="rightPanel">
-        <!-- Video Feed -->
-        <video id="video" autoplay></video>
-    </div>
-
-    <script>
-        // Get references to HTML elements
-        const captureButton = document.getElementById('captureButton');
-        const saveItemButton = document.getElementById('saveItemButton');
-        const photoDisplay = document.getElementById('photoDisplay');
-        const photo = document.getElementById('photo');
-        const itemNameInput = document.getElementById('itemName');
-        const video = document.getElementById('video');
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-
-        // Start the webcam feed
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(stream) {
-                video.srcObject = stream;
-                video.play(); // Start the video
-            })
-            .catch(function(error) {
-                alert("Error accessing webcam: " + error);
-            });
-
-        // Capture photo when the button is clicked
-        captureButton.addEventListener('click', function() {
-            // Capture the frame from the video feed and draw it on the canvas
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            let dataUrl = canvas.toDataURL('image/png');
-            photo.src = dataUrl;  // Set the captured image to the photo element
-            photoDisplay.style.display = 'block'; // Show the captured photo
-            saveItemButton.style.display = 'block'; // Show the submit button
-        });
-
-        // Submit the item
-        saveItemButton.addEventListener('click', function() {
-            const itemName = itemNameInput.value.trim();
-            const photoSrc = photo.src;
-
-            if (!itemName || !photoSrc) {
-                alert('Please provide a name and capture a photo.');
-                return;
-            }
-
-            const timestamp = new Date().toISOString();
-            const itemData = { name: itemName, photo: photoSrc, timestamp: timestamp };
-
-            let logData = JSON.parse(localStorage.getItem('scannedItems')) || [];
-            logData.push(itemData);
-            localStorage.setItem('scannedItems', JSON.stringify(logData));
-
-            alert('Item submitted!');
-            window.location.href = 'index.html';  // Redirect back to the home page
-        });
-    </script>
+    <script src="submit_logic.js"></script>
 </body>
 </html>
